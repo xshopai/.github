@@ -268,8 +268,8 @@ export const health = async (req, res) => {
   res.status(isHealthy ? 200 : 503).json({
     status,
     timestamp: new Date().toISOString(),
-    service: process.env.SERVICE_NAME,
-    version: process.env.SERVICE_VERSION,
+    service: process.env.NAME,
+    version: process.env.VERSION,
     checks,
   });
 };
@@ -428,8 +428,8 @@ GET    /api/products?category=electronics&page=2&limit=20&sort=price:asc
 
 ```bash
 # Service identification
-SERVICE_NAME=user-service
-SERVICE_VERSION=1.0.0
+NAME=user-service
+VERSION=1.0.0
 NODE_ENV=development
 
 # Database configuration
