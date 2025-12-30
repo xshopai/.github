@@ -1,10 +1,10 @@
-# 🛍️ AIOutlet
+# 🛍️ xShop.ai
 
-**AIOutlet** is a reference, open-source e-commerce platform built with a modern, microservices-based architecture. It is designed to serve as a learning resource and architectural blueprint for developers, architects, and students exploring distributed systems, full-stack development, and cloud-native design.
+**xShop.ai** is a reference, open-source e-commerce platform built with a modern, microservices-based architecture. It is designed to serve as a learning resource and architectural blueprint for developers, architects, and students exploring distributed systems, full-stack development, and cloud-native design.
 
 ## 🌐 Features
 
-**AIOutlet** is a modern, modular, and AI-ready e-commerce platform — similar in ambition to Amazon — with support for both responsive web and native mobile applications. It is built from the ground up for flexibility, scalability, and extensibility, following these core principles:
+**xShop.ai** is a modern, modular, and AI-ready e-commerce platform — similar in ambition to Amazon — with support for both responsive web and native mobile applications. It is built from the ground up for flexibility, scalability, and extensibility, following these core principles:
 
 - 🧱 **Microservices Architecture** — Each business capability is implemented as a separate microservice using the most suitable technology (Node.js, .NET, Python, Java, Go, etc.).
 - 🖥️ **Frontend in React** — A sleek, responsive UI built with vanilla React, optimized for user experience.
@@ -31,28 +31,42 @@
 
 Each microservice is hosted in its own GitHub repository for separation of concerns, independent scalability, and streamlined DevOps workflows. The platform demonstrates a polyglot architecture with different technologies chosen for each service's specific requirements:
 
+### Backend Services
+
 | Service                                                                               | Technology            | Description                                                                  |
 | ------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------- |
-| 🔐 [**auth-service**](https://github.com/aioutlet/auth-service)                       | Node.js + Express     | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
-| 👤 [**user-service**](https://github.com/aioutlet/user-service)                       | Node.js + Express     | Manages user profiles, identity records, preferences, and account linking    |
-| �️ [**admin-service**](https://github.com/aioutlet/admin-service)                     | Node.js + Express     | Back-office operations, dashboard, analytics, and user management            |
-| 📋 [**audit-service**](https://github.com/aioutlet/audit-service)                     | Node.js + TypeScript  | Comprehensive audit logging, compliance tracking, and activity monitoring    |
-| 🛍️ [**product-service**](https://github.com/aioutlet/product-service)                 | Python + FastAPI      | Handles product catalog, categories, attributes, search, and recommendations |
-| � [**inventory-service**](https://github.com/aioutlet/inventory-service)              | Go + Gin              | High-performance inventory management, stock tracking, and reservations      |
-| 🧾 [**order-service**](https://github.com/aioutlet/order-service)                     | .NET 8 + ASP.NET Core | Order creation, validation, and lifecycle management                         |
-| � [**payment-service**](https://github.com/aioutlet/payment-service)                  | .NET 8 + ASP.NET Core | Payment processing, gateway integration, and transaction security            |
-| ⚙️ [**order-processor-service**](https://github.com/aioutlet/order-processor-service) | Java + Spring Boot    | Asynchronous order processing with saga pattern and event sourcing           |
-| 📣 [**notification-service**](https://github.com/aioutlet/notification-service)       | Node.js + Express     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
+| 🔐 [**auth-service**](https://github.com/xshopai/auth-service)                       | Node.js + Express     | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
+| 👤 [**user-service**](https://github.com/xshopai/user-service)                       | Node.js + Express     | Manages user profiles, identity records, preferences, and account linking    |
+| �️ [**admin-service**](https://github.com/xshopai/admin-service)                     | Node.js + Express     | Back-office operations, dashboard, analytics, and user management            |
+| 📋 [**audit-service**](https://github.com/xshopai/audit-service)                     | Node.js + TypeScript  | Comprehensive audit logging, compliance tracking, and activity monitoring    |
+| 🛍️ [**product-service**](https://github.com/xshopai/product-service)                 | Python + FastAPI      | Handles product catalog, categories, attributes, search, and recommendations |
+| 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)              | Go + Gin              | High-performance inventory management, stock tracking, and reservations      |
+| 🧾 [**order-service**](https://github.com/xshopai/order-service)                     | .NET 8 + ASP.NET Core | Order creation, validation, and lifecycle management                         |
+| 💳 [**payment-service**](https://github.com/xshopai/payment-service)                  | .NET 8 + ASP.NET Core | Payment processing, gateway integration, and transaction security            |
+| ⚙️ [**order-processor-service**](https://github.com/xshopai/order-processor-service) | Java + Spring Boot    | Asynchronous order processing with saga pattern and event sourcing           |
+| 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Java + Quarkus        | Shopping cart management with Redis for session handling                     |
+| ⭐ [**review-service**](https://github.com/xshopai/review-service)                   | Node.js + Express     | Product reviews, ratings, and customer feedback management                   |
+| 📣 [**notification-service**](https://github.com/xshopai/notification-service)       | Node.js + Express     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
+| 🌐 [**web-bff**](https://github.com/xshopai/web-bff)                                 | Node.js + TypeScript  | Backend for Frontend aggregating data from multiple microservices            |
+
+> **Note:** Service-to-service communication and event-driven messaging is handled by [DAPR (Distributed Application Runtime)](https://dapr.io), eliminating the need for a separate message broker service.
+
+### Frontend Applications
+
+| Application                                                     | Technology  | Description                                        |
+| --------------------------------------------------------------- | ----------- | -------------------------------------------------- |
+| 🛍️ [**customer-ui**](https://github.com/xshopai/customer-ui)   | React       | Customer-facing e-commerce web application         |
+| �️ [**admin-ui**](https://github.com/xshopai/admin-ui)         | React       | Admin dashboard for platform management and analytics |
 
 ### 🚀 Planned Services
 
 | Service                       | Technology            | Description                                            |
 | ----------------------------- | --------------------- | ------------------------------------------------------ |
-| � **cart-service**            | Node.js/Redis         | Shopping cart management and session handling          |
-| ⭐ **review-service**         | Python + FastAPI      | Product reviews, ratings, and sentiment analysis       |
 | 🤖 **recommendation-service** | Python + ML/AI        | AI-powered product recommendations and personalization |
 | 🔍 **search-service**         | Elasticsearch         | Advanced product search with filters and facets        |
 | 📊 **analytics-service**      | Python + Apache Spark | Business intelligence and real-time analytics          |
+| 💬 **chatbot-service**        | Python + NLP/AI       | Intelligent customer support chatbot                   |
+| 📱 **mobile-app**             | React Native/Flutter  | Native mobile application for iOS and Android          |
 
 ## 📃 License
 
