@@ -33,30 +33,30 @@ Each microservice is hosted in its own GitHub repository for separation of conce
 
 ### Backend Services
 
-| Service                                                                               | Technology            | Description                                                                  |
+| Service                                                                               | Technology Stack      | Description                                                                  |
 | ------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------- |
-| 🔐 [**auth-service**](https://github.com/xshopai/auth-service)                       | Node.js + Express     | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
-| 👤 [**user-service**](https://github.com/xshopai/user-service)                       | Node.js + Express     | Manages user profiles, identity records, preferences, and account linking    |
-| �️ [**admin-service**](https://github.com/xshopai/admin-service)                     | Node.js + Express     | Back-office operations, dashboard, analytics, and user management            |
-| 📋 [**audit-service**](https://github.com/xshopai/audit-service)                     | Node.js + TypeScript  | Comprehensive audit logging, compliance tracking, and activity monitoring    |
-| 🛍️ [**product-service**](https://github.com/xshopai/product-service)                 | Python + FastAPI      | Handles product catalog, categories, attributes, search, and recommendations |
-| 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)              | Go + Gin              | High-performance inventory management, stock tracking, and reservations      |
-| 🧾 [**order-service**](https://github.com/xshopai/order-service)                     | .NET 8 + ASP.NET Core | Order creation, validation, and lifecycle management                         |
-| 💳 [**payment-service**](https://github.com/xshopai/payment-service)                  | .NET 8 + ASP.NET Core | Payment processing, gateway integration, and transaction security            |
-| ⚙️ [**order-processor-service**](https://github.com/xshopai/order-processor-service) | Java + Spring Boot    | Asynchronous order processing with saga pattern and event sourcing           |
-| 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Java + Quarkus        | Shopping cart management with Redis for session handling                     |
-| ⭐ [**review-service**](https://github.com/xshopai/review-service)                   | Node.js + Express     | Product reviews, ratings, and customer feedback management                   |
-| 📣 [**notification-service**](https://github.com/xshopai/notification-service)       | Node.js + Express     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
-| 🌐 [**web-bff**](https://github.com/xshopai/web-bff)                                 | Node.js + TypeScript  | Backend for Frontend aggregating data from multiple microservices            |
+| 🔐 [**auth-service**](https://github.com/xshopai/auth-service)                       | Node.js 20<br>Express 5<br>MongoDB 8 | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
+| 👤 [**user-service**](https://github.com/xshopai/user-service)                       | Node.js 20<br>Express 5<br>MongoDB 8 | Manages user profiles, identity records, preferences, and account linking    |
+| 🛡️ [**admin-service**](https://github.com/xshopai/admin-service)                     | Node.js 20<br>Express 5<br>MongoDB 8 | Back-office operations, dashboard, analytics, and user management            |
+| 📋 [**audit-service**](https://github.com/xshopai/audit-service)                     | Node.js 20<br>TypeScript 5<br>PostgreSQL 16  | Comprehensive audit logging, compliance tracking, and activity monitoring    |
+| 🛍️ [**product-service**](https://github.com/xshopai/product-service)                 | Python 3.11<br>FastAPI 0.104<br>MongoDB 8      | Handles product catalog, categories, attributes, search, and recommendations |
+| 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)              | Python 3.11<br>Flask 3.0<br>MySQL 8              | High-performance inventory management, stock tracking, and reservations      |
+| 🧾 [**order-service**](https://github.com/xshopai/order-service)                     | .NET 8<br>ASP.NET Core 8<br>SQL Server 2022 | Order creation, validation, and lifecycle management                         |
+| 💳 [**payment-service**](https://github.com/xshopai/payment-service)                  | .NET 8<br>ASP.NET Core 8<br>SQL Server 2022 | Payment processing, gateway integration, and transaction security            |
+| ⚙️ [**order-processor-service**](https://github.com/xshopai/order-processor-service) | Java 21<br>Spring Boot 3.3<br>PostgreSQL 16    | Asynchronous order processing with saga pattern and event sourcing           |
+| 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Java 21<br>Quarkus 3.6<br>Redis 7 (via Dapr)        | Shopping cart management with Redis for session handling                     |
+| ⭐ [**review-service**](https://github.com/xshopai/review-service)                   | Node.js 20<br>Express 4<br>MongoDB 8     | Product reviews, ratings, and customer feedback management                   |
+| 📣 [**notification-service**](https://github.com/xshopai/notification-service)       | Node.js 20<br>Express 4<br>TypeScript 5     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
+| 🌐 [**web-bff**](https://github.com/xshopai/web-bff)                                 | Node.js 20<br>Express 4<br>TypeScript 5  | Backend for Frontend aggregating data from multiple microservices            |
 
 > **Note:** Service-to-service communication and event-driven messaging is handled by [DAPR (Distributed Application Runtime)](https://dapr.io), eliminating the need for a separate message broker service.
 
 ### Frontend Applications
 
-| Application                                                     | Technology  | Description                                        |
+| Application                                                     | Technology Stack  | Description                                        |
 | --------------------------------------------------------------- | ----------- | -------------------------------------------------- |
-| 🛍️ [**customer-ui**](https://github.com/xshopai/customer-ui)   | React       | Customer-facing e-commerce web application         |
-| �️ [**admin-ui**](https://github.com/xshopai/admin-ui)         | React       | Admin dashboard for platform management and analytics |
+| 🛍️ [**customer-ui**](https://github.com/xshopai/customer-ui)   | React 18       | Customer-facing e-commerce web application         |
+| 🛡️ [**admin-ui**](https://github.com/xshopai/admin-ui)         | React 18<br>TypeScript 4       | Admin dashboard for platform management and analytics |
 
 ### 🚀 Planned Services
 
