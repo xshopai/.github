@@ -1,10 +1,10 @@
-# GitHub Copilot Instructions for AIOutlet
+# GitHub Copilot Instructions for xShop.ai
 
-This file provides context and guidelines for GitHub Copilot to better assist with the AIOutlet microservices platform.
+This file provides context and guidelines for GitHub Copilot to better assist with the xShop.ai microservices platform.
 
 ## Project Overview
 
-AIOutlet is a comprehensive e-commerce platform built using a microservices architecture. The platform consists of 11 services implemented across 5 different technology stacks, designed for scalability, maintainability, and high performance.
+xShop.ai is a comprehensive e-commerce platform built using a microservices architecture. The platform consists of 11 services implemented across 5 different technology stacks, designed for scalability, maintainability, and high performance.
 
 ### Core Business Domain
 
@@ -784,4 +784,4 @@ Each service should have:
 - Deployment guidelines
 - Troubleshooting guide
 
-This instruction file should help GitHub Copilot provide more accurate and contextually relevant suggestions for the AIOutlet platform. Update this file as the architecture evolves or new patterns are adopted.
+This instruction file should help GitHub Copilot provide more accurate and contextually relevant suggestions for the xShop.ai platform. Update this file as the architecture evolves or new patterns are adopted.
