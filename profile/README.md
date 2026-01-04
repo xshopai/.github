@@ -1,10 +1,10 @@
-# 🛍️ xShop.ai
+# 🛍️ xshop.ai
 
-**xShop.ai** is a reference, open-source e-commerce platform built with a modern, microservices-based architecture. It is designed to serve as a learning resource and architectural blueprint for developers, architects, and students exploring distributed systems, full-stack development, and cloud-native design.
+**xshop.ai** is a reference, open-source e-commerce platform built with a modern, microservices-based architecture. It is designed to serve as a learning resource and architectural blueprint for developers, architects, and students exploring distributed systems, full-stack development, and cloud-native design.
 
 ## 🌐 Features
 
-**xShop.ai** is a modern, modular, and AI-ready e-commerce platform — similar in ambition to Amazon — with support for both responsive web and native mobile applications. It is built from the ground up for flexibility, scalability, and extensibility, following these core principles:
+**xshop.ai** is a modern, modular, and AI-ready e-commerce platform — similar in ambition to Amazon — with support for both responsive web and native mobile applications. It is built from the ground up for flexibility, scalability, and extensibility, following these core principles:
 
 - 🧱 **Microservices Architecture** — Each business capability is implemented as a separate microservice using the most suitable technology (Node.js, .NET, Python, Java, Go, etc.).
 - 🖥️ **Frontend in React** — A sleek, responsive UI built with vanilla React, optimized for user experience.
