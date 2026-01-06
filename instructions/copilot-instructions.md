@@ -1,10 +1,10 @@
-# GitHub Copilot Instructions for xshop.ai
+# GitHub Copilot Instructions for xshopai
 
-This file provides context and guidelines for GitHub Copilot to better assist with the xshop.ai microservices platform.
+This file provides context and guidelines for GitHub Copilot to better assist with the xshopai microservices platform.
 
 ## Project Overview
 
-xshop.ai is a comprehensive e-commerce platform built using a microservices architecture. The platform consists of 11 services implemented across 5 different technology stacks, designed for scalability, maintainability, and high performance.
+xshopai is a comprehensive e-commerce platform built using a microservices architecture. The platform consists of 11 services implemented across 5 different technology stacks, designed for scalability, maintainability, and high performance.
 
 ### Core Business Domain
 
@@ -784,4 +784,4 @@ Each service should have:
 - Deployment guidelines
 - Troubleshooting guide
 
-This instruction file should help GitHub Copilot provide more accurate and contextually relevant suggestions for the xshop.ai platform. Update this file as the architecture evolves or new patterns are adopted.
+This instruction file should help GitHub Copilot provide more accurate and contextually relevant suggestions for the xshopai platform. Update this file as the architecture evolves or new patterns are adopted.
