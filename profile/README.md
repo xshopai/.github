@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
   <img src="https://img.shields.io/badge/AI--Powered-OpenAI-00A67E.svg" alt="AI Powered">
   <img src="https://img.shields.io/badge/microservices-15-orange.svg" alt="Microservices">
-  <img src="https://img.shields.io/badge/languages-6-purple.svg" alt="Languages">
+  <img src="https://img.shields.io/badge/languages-5-purple.svg" alt="Languages">
 </p>
 
 ---
@@ -27,7 +27,7 @@
 >
 > | | | |
 > |:---:|:---|:---|
-> | **x** | ✖️ | **Cross-platform & polyglot** — Built with 6+ languages (Node.js, Python, Java, .NET, Go, TypeScript) proving that the right tool for each job creates the best system |
+> | **x** | ✖️ | **Cross-platform & polyglot** — Built with 5 languages (C#, Java, Python, TypeScript, JavaScript), diverse frameworks (Express, FastAPI, Spring Boot, Quarkus, ASP.NET Core), and polyglot persistence (MongoDB, PostgreSQL, SQL Server, MySQL, Redis) |
 > | **shop** | 🛒 | **E-commerce at scale** — A full-featured online store inspired by Amazon and Microsoft's [eShop reference architecture](https://github.com/dotnet/eShop) |
 > | **ai** | 🤖 | **AI-native** — Intelligent chatbot, smart recommendations, and natural language interfaces powered by OpenAI |
 
