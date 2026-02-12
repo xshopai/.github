@@ -449,7 +449,7 @@ PAYMENT_SERVICE_URL=http://localhost:8080
 
 # Message broker
 RABBITMQ_URL=amqp://admin:admin123@localhost:5672
-RABBITMQ_EXCHANGE=xshopai-events
+RABBITMQ_EXCHANGE=xshopai.events
 
 # Observability
 LOG_LEVEL=debug
