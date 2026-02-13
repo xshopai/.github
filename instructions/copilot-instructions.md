@@ -296,7 +296,7 @@ class EventPublisher {
         ...message,
         timestamp: new Date().toISOString(),
         correlationId: options.correlationId,
-      })
+      }),
     );
 
     await channel.publish(exchange, routingKey, messageBuffer, {
@@ -317,7 +317,7 @@ await eventPublisher.publish(
     userId: order.userId,
     amount: order.total,
   },
-  { correlationId }
+  { correlationId },
 );
 ```
 
@@ -502,7 +502,7 @@ describe('UserService', () => {
         expect.objectContaining({
           email: userData.email,
           password: expect.any(String), // hashed password
-        })
+        }),
       );
     });
   });
