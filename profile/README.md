@@ -8,6 +8,7 @@
   <a href="#-features">Features</a> •
   <a href="#%EF%B8%8F-architecture-highlights">Architecture</a> •
   <a href="#-microservices-overview">Services</a> •
+  <a href="./BUILD_STATUS.md">Build Status</a> •
   <a href="#-contributing">Contributing</a>
 </p>
 
@@ -15,7 +16,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
   <img src="https://img.shields.io/badge/AI--Powered-OpenAI-00A67E.svg" alt="AI Powered">
-  <img src="https://img.shields.io/badge/microservices-15-orange.svg" alt="Microservices">
+  <img src="https://img.shields.io/badge/microservices-14-orange.svg" alt="Microservices">
   <img src="https://img.shields.io/badge/languages-5-purple.svg" alt="Languages">
 </p>
 
@@ -62,9 +63,9 @@ Designed as a learning resource and architectural blueprint for developers, arch
 - **🌐 Polyglot Architecture**: Each service uses the technology best suited for its requirements
 - **🔄 Event-Driven Communication**: Services communicate via message queues and events
 - **📊 Comprehensive Audit Logging**: Full activity tracking and compliance monitoring
-- **⚡ High-Performance Services**: Go-based inventory service for speed-critical operations
+- **⚡ High-Performance Services**: Optimized for speed-critical operations like inventory and cart
 - **🎯 Saga Pattern**: Distributed transaction management in order processing
-- **📈 Scalable Data Storage**: PostgreSQL, MongoDB, and Redis for different data patterns
+- **📈 Scalable Data Storage**: PostgreSQL, MongoDB, SQL Server, MySQL, and Redis for different data patterns
 - **🛡️ Security-First Design**: JWT authentication, service-to-service tokens, and audit trails
 
 ## 🧩 Microservices Overview
@@ -80,12 +81,12 @@ Each microservice is hosted in its own GitHub repository for separation of conce
 | 🔐 [**auth-service**](https://github.com/xshopai/auth-service)                       | Node.js 20<br>Express 5<br>MongoDB 8        | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
 | 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Java 21<br>Quarkus 3.6<br>Redis 7 (via Dapr)| Shopping cart management with Redis for session handling                     |
 | 💬 [**chat-service**](https://github.com/xshopai/chat-service)                       | Node.js 20<br>TypeScript 5<br>OpenAI        | AI-powered chatbot for customer support and order inquiries                  |
-| 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)             | Python 3.11<br>Flask 3.0<br>MySQL 8         | High-performance inventory management, stock tracking, and reservations      |
+| 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)             | Python 3.12<br>Flask 3.0<br>MySQL 8         | High-performance inventory management, stock tracking, and reservations      |
 | 📣 [**notification-service**](https://github.com/xshopai/notification-service)       | Node.js 20<br>Express 4<br>TypeScript 5     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
 | ⚙️ [**order-processor-service**](https://github.com/xshopai/order-processor-service) | Java 21<br>Spring Boot 3.3<br>PostgreSQL 16 | Asynchronous order processing with saga pattern and event sourcing           |
 | 🧾 [**order-service**](https://github.com/xshopai/order-service)                     | .NET 8<br>ASP.NET Core 8<br>SQL Server 2022 | Order creation, validation, and lifecycle management                         |
 | 💳 [**payment-service**](https://github.com/xshopai/payment-service)                 | .NET 8<br>ASP.NET Core 8<br>SQL Server 2022 | Payment processing, gateway integration, and transaction security            |
-| 🛍️ [**product-service**](https://github.com/xshopai/product-service)                 | Python 3.11<br>FastAPI 0.104<br>MongoDB 8   | Handles product catalog, categories, attributes, search, and recommendations |
+| 🛍️ [**product-service**](https://github.com/xshopai/product-service)                 | Python 3.12<br>FastAPI 0.115<br>MongoDB 8   | Handles product catalog, categories, attributes, search, and recommendations |
 | ⭐ [**review-service**](https://github.com/xshopai/review-service)                   | Node.js 20<br>Express 4<br>MongoDB 8        | Product reviews, ratings, and customer feedback management                   |
 | 👤 [**user-service**](https://github.com/xshopai/user-service)                       | Node.js 20<br>Express 5<br>MongoDB 8        | Manages user profiles, identity records, preferences, and account linking    |
 | 🌐 [**web-bff**](https://github.com/xshopai/web-bff)                                 | Node.js 20<br>Express 4<br>TypeScript 5     | Backend for Frontend aggregating data from multiple microservices            |
