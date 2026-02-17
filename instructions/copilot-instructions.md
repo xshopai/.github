@@ -443,9 +443,9 @@ JWT_EXPIRES_IN=24h
 BCRYPT_ROUNDS=12
 
 # External services
-AUTH_SERVICE_URL=http://localhost:4000
-PRODUCT_SERVICE_URL=http://localhost:8000
-PAYMENT_SERVICE_URL=http://localhost:8080
+AUTH_SERVICE_URL=http://localhost:8004
+PRODUCT_SERVICE_URL=http://localhost:8001
+PAYMENT_SERVICE_URL=http://localhost:8009
 
 # Message broker
 RABBITMQ_URL=amqp://admin:admin123@localhost:5672
