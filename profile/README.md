@@ -28,7 +28,7 @@
 >
 > | | | |
 > |:---:|:---|:---|
-> | **x** | ✖️ | **Cross-platform & polyglot** — Built with 5 languages (C#, Java, Python, TypeScript, JavaScript), diverse frameworks (Express, FastAPI, Spring Boot, Quarkus, ASP.NET Core), and polyglot persistence (MongoDB, PostgreSQL, SQL Server, MySQL, Redis) |
+> | **x** | ✖️ | **Cross-platform & polyglot** — Built with 5 languages (C#, Java, Python, TypeScript, JavaScript), diverse frameworks (Express, FastAPI, Spring Boot, ASP.NET Core), and polyglot persistence (MongoDB, PostgreSQL, SQL Server, MySQL, Redis) |
 > | **shop** | 🛒 | **E-commerce at scale** — A full-featured online store inspired by Amazon and Microsoft's [eShop reference architecture](https://github.com/dotnet/eShop) |
 > | **ai** | 🤖 | **AI-native** — Intelligent chatbot, smart recommendations, and natural language interfaces powered by OpenAI |
 
@@ -79,7 +79,7 @@ Each microservice is hosted in its own GitHub repository for separation of conce
 | 🛡️ [**admin-service**](https://github.com/xshopai/admin-service)                     | Node.js 20<br>Express 5<br>MongoDB 8        | Back-office operations, dashboard, analytics, and user management            |
 | 📋 [**audit-service**](https://github.com/xshopai/audit-service)                     | Node.js 20<br>TypeScript 5<br>PostgreSQL 16 | Comprehensive audit logging, compliance tracking, and activity monitoring    |
 | 🔐 [**auth-service**](https://github.com/xshopai/auth-service)                       | Node.js 20<br>Express 5<br>MongoDB 8        | Handles authentication, MFA, social login (OAuth2), and JWT issuance         |
-| 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Java 21<br>Quarkus 3.6<br>Redis 7 (via Dapr)| Shopping cart management with Redis for session handling                     |
+| 🛒 [**cart-service**](https://github.com/xshopai/cart-service)                       | Node.js 20<br>TypeScript 5<br>Redis 7 (via Dapr)| Shopping cart management with Redis state via Dapr                           |
 | 💬 [**chat-service**](https://github.com/xshopai/chat-service)                       | Node.js 20<br>TypeScript 5<br>OpenAI        | AI-powered chatbot for customer support and order inquiries                  |
 | 📦 [**inventory-service**](https://github.com/xshopai/inventory-service)             | Python 3.12<br>Flask 3.0<br>MySQL 8         | High-performance inventory management, stock tracking, and reservations      |
 | 📣 [**notification-service**](https://github.com/xshopai/notification-service)       | Node.js 20<br>Express 4<br>TypeScript 5     | Multi-channel notifications (email, SMS, push, WebSocket)                    |
