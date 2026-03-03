@@ -24,29 +24,29 @@ The platform is designed as both a functional e-commerce system and an architect
 
 ### Backend
 
-| Service | Stack | Purpose |
-|---------|-------|---------|
-| [admin-service](https://github.com/xshopai/admin-service) | Node.js · Express | User and role administration |
-| [audit-service](https://github.com/xshopai/audit-service) | Node.js · TypeScript · PostgreSQL | Immutable audit trail for all platform events |
-| [auth-service](https://github.com/xshopai/auth-service) | Node.js · Express | Authentication, JWT issuance, session management |
-| [cart-service](https://github.com/xshopai/cart-service) | Node.js · TypeScript · Redis | Shopping cart with guest and authenticated cart support |
-| [chat-service](https://github.com/xshopai/chat-service) | Node.js · TypeScript · Azure OpenAI | AI-powered conversational shopping assistant |
-| [inventory-service](https://github.com/xshopai/inventory-service) | Python · Flask · MySQL | Stock management, reservations, reorder alerts |
-| [notification-service](https://github.com/xshopai/notification-service) | Node.js · TypeScript | Event-driven email and notification delivery |
-| [order-processor-service](https://github.com/xshopai/order-processor-service) | Java · Spring Boot · PostgreSQL | Choreography-based saga for order fulfillment |
-| [order-service](https://github.com/xshopai/order-service) | C# · ASP.NET Core · SQL Server | Order lifecycle management |
-| [payment-service](https://github.com/xshopai/payment-service) | C# · ASP.NET Core · SQL Server | Multi-provider payment processing |
-| [product-service](https://github.com/xshopai/product-service) | Python · FastAPI · MongoDB | Product catalog, search, and categories |
-| [review-service](https://github.com/xshopai/review-service) | Node.js · Express · MongoDB | Product reviews and ratings |
-| [user-service](https://github.com/xshopai/user-service) | Node.js · Express · MongoDB | User profiles, addresses, preferences |
-| [web-bff](https://github.com/xshopai/web-bff) | Node.js · TypeScript | Backend for Frontend — API gateway for web UIs |
+| Service | Stack | Purpose | CI |
+|---------|-------|---------|:--:|
+| [admin-service](https://github.com/xshopai/admin-service) | Node.js · Express | User and role administration | [![CI](https://github.com/xshopai/admin-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/admin-service/actions/workflows/ci.yml) |
+| [audit-service](https://github.com/xshopai/audit-service) | Node.js · TypeScript · PostgreSQL | Immutable audit trail for all platform events | [![CI](https://github.com/xshopai/audit-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/audit-service/actions/workflows/ci.yml) |
+| [auth-service](https://github.com/xshopai/auth-service) | Node.js · Express | Authentication, JWT issuance, session management | [![CI](https://github.com/xshopai/auth-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/auth-service/actions/workflows/ci.yml) |
+| [cart-service](https://github.com/xshopai/cart-service) | Node.js · TypeScript · Redis | Shopping cart with guest and authenticated cart support | [![CI](https://github.com/xshopai/cart-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/cart-service/actions/workflows/ci.yml) |
+| [chat-service](https://github.com/xshopai/chat-service) | Node.js · TypeScript · Azure OpenAI | AI-powered conversational shopping assistant | [![CI](https://github.com/xshopai/chat-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/chat-service/actions/workflows/ci.yml) |
+| [inventory-service](https://github.com/xshopai/inventory-service) | Python · Flask · MySQL | Stock management, reservations, reorder alerts | [![CI](https://github.com/xshopai/inventory-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/inventory-service/actions/workflows/ci.yml) |
+| [notification-service](https://github.com/xshopai/notification-service) | Node.js · TypeScript | Event-driven email and notification delivery | [![CI](https://github.com/xshopai/notification-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/notification-service/actions/workflows/ci.yml) |
+| [order-processor-service](https://github.com/xshopai/order-processor-service) | Java · Spring Boot · PostgreSQL | Choreography-based saga for order fulfillment | [![CI](https://github.com/xshopai/order-processor-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/order-processor-service/actions/workflows/ci.yml) |
+| [order-service](https://github.com/xshopai/order-service) | C# · ASP.NET Core · SQL Server | Order lifecycle management | [![CI](https://github.com/xshopai/order-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/order-service/actions/workflows/ci.yml) |
+| [payment-service](https://github.com/xshopai/payment-service) | C# · ASP.NET Core · SQL Server | Multi-provider payment processing | [![CI](https://github.com/xshopai/payment-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/payment-service/actions/workflows/ci.yml) |
+| [product-service](https://github.com/xshopai/product-service) | Python · FastAPI · MongoDB | Product catalog, search, and categories | [![CI](https://github.com/xshopai/product-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/product-service/actions/workflows/ci.yml) |
+| [review-service](https://github.com/xshopai/review-service) | Node.js · Express · MongoDB | Product reviews and ratings | [![CI](https://github.com/xshopai/review-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/review-service/actions/workflows/ci.yml) |
+| [user-service](https://github.com/xshopai/user-service) | Node.js · Express · MongoDB | User profiles, addresses, preferences | [![CI](https://github.com/xshopai/user-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/user-service/actions/workflows/ci.yml) |
+| [web-bff](https://github.com/xshopai/web-bff) | Node.js · TypeScript | Backend for Frontend — API gateway for web UIs | [![CI](https://github.com/xshopai/web-bff/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/web-bff/actions/workflows/ci.yml) |
 
 ### Frontend
 
-| Application | Stack | Purpose |
-|-------------|-------|---------|
-| [customer-ui](https://github.com/xshopai/customer-ui) | React 18 | Customer-facing storefront |
-| [admin-ui](https://github.com/xshopai/admin-ui) | React 18 · TypeScript | Admin portal for operations and analytics |
+| Application | Stack | Purpose | CI |
+|-------------|-------|---------|:--:|
+| [customer-ui](https://github.com/xshopai/customer-ui) | React 18 | Customer-facing storefront | [![CI](https://github.com/xshopai/customer-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/customer-ui/actions/workflows/ci.yml) |
+| [admin-ui](https://github.com/xshopai/admin-ui) | React 18 · TypeScript | Admin portal for operations and analytics | [![CI](https://github.com/xshopai/admin-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/xshopai/admin-ui/actions/workflows/ci.yml) |
 
 ---
 
@@ -60,7 +60,6 @@ The platform is designed as both a functional e-commerce system and an architect
 | Event Catalog | [Wiki](https://github.com/xshopai/docs/wiki/Event-Catalog) |
 | Installation Guide | [Wiki](https://github.com/xshopai/docs/wiki/Installation-Guide) |
 | Deployment Guide | [Wiki](https://github.com/xshopai/docs/wiki/Deployment-Guide) |
-| Build Status | [BUILD_STATUS.md](./BUILD_STATUS.md) |
 
 ---
 
