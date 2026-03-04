@@ -1,787 +1,1155 @@
-# GitHub Copilot Instructions for xshopai
+# GitHub Copilot Instructions — xshopai Platform
 
-This file provides context and guidelines for GitHub Copilot to better assist with the xshopai microservices platform.
+This is the single authoritative instruction file for the xshopai microservices platform.
+It consolidates guidelines from all individual service repositories.
 
-## Project Overview
+---
 
-xshopai is a comprehensive e-commerce platform built using a microservices architecture. The platform consists of 11 services implemented across 5 different technology stacks, designed for scalability, maintainability, and high performance.
+## Platform Overview
 
-### Core Business Domain
+xshopai is a polyglot e-commerce platform built on a microservices architecture using Dapr as the sidecar runtime for service invocation, pub/sub messaging, and state management.
 
-- **E-commerce Platform**: Online retail with AI-powered features
-- **Multi-tenant Architecture**: Support for multiple vendors/sellers
-- **Event-driven Design**: Asynchronous processing for scalability
-- **Polyglot Persistence**: Different databases for different use cases
+- **Pattern**: Event-driven microservices with choreography-based saga for order fulfillment
+- **Messaging**: Dapr pub/sub (RabbitMQ backend) — CloudEvents 1.0 format on all events
+- **Service Discovery**: Dapr service invocation between services
+- **Deployment targets**: Azure Container Apps, Azure App Service, Local Docker Compose
+- **Dapr sidecar ports**: HTTP 3500, gRPC 50001 (per service, configured in `.dapr/`)
 
-## Architecture Principles
+---
 
-### Microservices Design Patterns
+## Services Quick Reference
 
-- **Domain-Driven Design (DDD)**: Services organized by business capabilities
-- **Database per Service**: Each service owns its data
-- **Saga Pattern**: Choreography-based distributed transactions
-- **Event Sourcing**: For order processing and audit trails
-- **CQRS**: Command Query Responsibility Segregation where applicable
+| Service                 | Language                      | Port | Database         | Dapr App ID               |
+| ----------------------- | ----------------------------- | ---- | ---------------- | ------------------------- |
+| product-service         | Python 3.11 / FastAPI         | 8001 | MongoDB 27019    | `product-service`         |
+| user-service            | Node.js 20 / Express 5 ESM    | 8002 | MongoDB 27018    | `user-service`            |
+| admin-service           | Node.js 20 / Express 5 ESM    | 8003 | None             | `admin-service`           |
+| auth-service            | Node.js 20 / Express 5 ESM    | 8004 | None (stateless) | `auth-service`            |
+| inventory-service       | Python 3.11 / Flask 3 + RESTX | 8005 | MySQL 3306       | `inventory-service`       |
+| order-service           | C# 12 / .NET 8 ASP.NET Core   | 8006 | SQL Server 1434  | `order-service`           |
+| order-processor-service | Java 17 / Spring Boot 3.3     | 8007 | PostgreSQL 5435  | `order-processor-service` |
+| cart-service            | Node.js 20 / Express 4 TS     | 8008 | Redis 6379       | `cart-service`            |
+| payment-service         | C# 12 / .NET 8 ASP.NET Core   | 8009 | SQL Server 1433  | `payment-service`         |
+| review-service          | Node.js 20 / Express ESM      | 8010 | MongoDB 27020    | `review-service`          |
+| notification-service    | Node.js 20 / Express TS       | 8011 | None (stateless) | `notification-service`    |
+| audit-service           | Node.js 20 / Express TS       | 8012 | PostgreSQL 5434  | `audit-service`           |
+| chat-service            | Node.js 20 / Express TS       | 8013 | None (stateless) | `chat-service`            |
+| web-bff                 | Node.js 20 / Express 4 TS     | 8014 | None (stateless) | `web-bff`                 |
+| customer-ui             | React 18 JSX (CRA)            | 3000 | —                | —                         |
+| admin-ui                | React 18 TSX (CRA rewired)    | 3001 | —                | —                         |
+| db-seeder               | Python 3.11 CLI               | —    | All DBs          | —                         |
+| infrastructure          | Bicep / Bash                  | —    | —                | —                         |
 
-### Technology Stack Guidelines
+---
 
-- **Node.js/Express**: User-facing APIs, rapid development
-- **C#/.NET 8**: Business-critical services requiring type safety
-- **Python**: Data processing, AI/ML integration, analytics
-- **Go**: High-performance, lightweight services
-- **Java/Spring Boot**: Enterprise patterns, saga orchestration
+## Universal Rules (All Services)
 
-## Service Portfolio
+### Correlation IDs
 
-### Authentication & User Management
+- If `X-Correlation-ID` header is missing on an inbound request, generate a UUID
+- Propagate `correlationId` in: all logs, all error responses, all outbound Dapr calls, all published events
 
-```typescript
-// auth-service (Node.js/Express, Port 4000)
-// Responsibilities: JWT authentication, MFA, social auth, session management
-// Database: MongoDB
-// Key patterns: Passport.js strategies, JWT refresh tokens, TOTP MFA
+### Error Response Contract
 
-// user-service (Node.js/Express, Port 5000)
-// Responsibilities: User profiles, preferences, address management
-// Database: MongoDB
-// Key patterns: CRUD operations, data validation, user lifecycle
+All services MUST return errors in this exact JSON structure:
 
-// admin-service (Node.js/Express, Port 6000)
-// Responsibilities: Administrative operations, user management
-// Database: MongoDB
-// Key patterns: Role-based access, bulk operations, reporting
-```
-
-### Product & Inventory Management
-
-```python
-# product-service (Python/FastAPI, Port 8000)
-# Responsibilities: Product catalog, search, categories, metadata
-# Database: MongoDB
-# Key patterns: Full-text search, image handling, category hierarchies
-
-# inventory-service (Python/Flask, Port 3000)
-# Responsibilities: Stock levels, reservations, warehouse management
-# Database: MySQL
-# Key patterns: Concurrent stock updates, reservation system, alerts
-```
-
-### Order Processing
-
-```csharp
-// order-service (C#/.NET 8, Port 7000)
-// Responsibilities: Order creation, status tracking, order history
-// Database: PostgreSQL
-// Key patterns: Entity Framework, FluentValidation, domain models
-
-// payment-service (C#/.NET 8, Port 8080)
-// Responsibilities: Payment processing, refunds, payment methods
-// Database: SQL Server
-// Key patterns: Stripe/PayPal integration, PCI compliance, idempotency
-```
-
-```java
-// order-processor-service (Java/Spring Boot)
-// Responsibilities: Saga orchestration, distributed transactions
-// Database: PostgreSQL
-// Key patterns: Spring Boot, choreography saga, event sourcing
-```
-
-### Supporting Services
-
-```go
-// cart-service (Go/Gin)
-// Responsibilities: Shopping cart, session management
-// Database: Redis
-// Key patterns: Session-based storage, TTL, cart abandonment
-```
-
-```typescript
-// review-service (Node.js/Express)
-// Responsibilities: Product reviews, ratings, moderation
-// Database: MongoDB
-// Key patterns: Aggregation pipelines, content moderation, sentiment analysis
-
-// notification-service (Node.js/Express)
-// Responsibilities: Email, SMS, push notifications
-// Database: MongoDB
-// Key patterns: Template engine, queue processing, delivery tracking
-
-// audit-service (TypeScript/Node.js)
-// Responsibilities: Audit logging, compliance, data lineage
-// Database: PostgreSQL
-// Key patterns: Event logging, immutable records, retention policies
-```
-
-## Common Patterns & Standards
-
-### Authentication & Authorization
-
-```javascript
-// JWT Token Structure
-const tokenPayload = {
-  id: user.id,
-  email: user.email,
-  roles: user.roles, // ['user', 'admin', 'vendor']
-  iat: issuedAt,
-  exp: expiration,
-};
-
-// Role-based middleware pattern
-export const authorizeRoles =
-  (...roles) =>
-  (req, res, next) => {
-    if (!req.user || !roles.some((role) => req.user.roles?.includes(role))) {
-      return next(new ErrorResponse('Forbidden: insufficient role', 403));
-    }
-    next();
-  };
-
-// Usage in routes
-router.get('/admin-only', requireAuth, authorizeRoles('admin'), adminController);
-```
-
-### Correlation ID Pattern
-
-```javascript
-// Always include correlation ID in requests
-class CorrelationIdHelper {
-  static getCorrelationId(req) {
-    return req.correlationId || 'unknown';
-  }
-
-  static createHeaders(req) {
-    return {
-      'X-Correlation-ID': this.getCorrelationId(req),
-      'Content-Type': 'application/json',
-    };
-  }
-}
-
-// Inter-service HTTP calls
-const response = await serviceClient.get(req, '/api/endpoint', {
-  headers: CorrelationIdHelper.createHeaders(req),
-});
-```
-
-### Error Handling Standards
-
-```javascript
-// Standard error response format
-class ErrorResponse extends Error {
-  constructor(message, statusCode, errors = null) {
-    super(message);
-    this.statusCode = statusCode;
-    this.errors = errors;
-    this.isOperational = true;
-  }
-}
-
-// Usage
-throw new ErrorResponse('User not found', 404);
-throw new ErrorResponse('Validation failed', 400, validationErrors);
-```
-
-### Logging Standards
-
-```javascript
-// Structured logging with correlation ID
-logger.info('Operation completed', {
-  operation: 'CREATE_USER',
-  userId: user.id,
-  correlationId: CorrelationIdHelper.getCorrelationId(req),
-  duration: Date.now() - startTime,
-  metadata: { additionalContext },
-});
-
-// Error logging
-logger.error('Operation failed', {
-  operation: 'PROCESS_PAYMENT',
-  error: error.message,
-  stack: error.stack,
-  correlationId: CorrelationIdHelper.getCorrelationId(req),
-});
-```
-
-### Rate Limiting Patterns
-
-```javascript
-// Service-specific rate limits
-const createRateLimit = (windowMs, max, message) =>
-  rateLimit({
-    windowMs,
-    max,
-    message,
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res) => {
-      logger.warn('Rate limit exceeded', {
-        ip: req.ip,
-        endpoint: req.path,
-        correlationId: CorrelationIdHelper.getCorrelationId(req),
-      });
-      res.status(429).json({ error: message });
-    },
-  });
-
-// Different limits for different operations
-const profileRateLimit = createRateLimit(15 * 60 * 1000, 100, 'Too many profile requests');
-const loginRateLimit = createRateLimit(15 * 60 * 1000, 5, 'Too many login attempts');
-```
-
-### Database Connection Patterns
-
-```javascript
-// MongoDB connection with retry logic
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-    });
-
-    logger.info('MongoDB connected', { host: conn.connection.host });
-    global.mongoUrl = process.env.MONGODB_URI;
-  } catch (error) {
-    logger.error('Database connection failed', { error: error.message });
-    process.exit(1);
-  }
-};
-```
-
-### Health Check Implementation
-
-```javascript
-// Standard health check endpoints
-export const health = async (req, res) => {
-  const checks = {
-    database: await checkDatabase(),
-    redis: await checkRedis(),
-    externalServices: await checkExternalServices(),
-  };
-
-  const isHealthy = Object.values(checks).every((check) => check.healthy);
-  const status = isHealthy ? 'healthy' : 'unhealthy';
-
-  res.status(isHealthy ? 200 : 503).json({
-    status,
-    timestamp: new Date().toISOString(),
-    service: process.env.NAME,
-    version: process.env.VERSION,
-    checks,
-  });
-};
-```
-
-## Message Broker Patterns
-
-### RabbitMQ Event Publishing
-
-```javascript
-// Event publisher pattern
-class EventPublisher {
-  constructor(connection) {
-    this.connection = connection;
-  }
-
-  async publish(exchange, routingKey, message, options = {}) {
-    const channel = await this.connection.createChannel();
-
-    await channel.assertExchange(exchange, 'topic', { durable: true });
-
-    const messageBuffer = Buffer.from(
-      JSON.stringify({
-        ...message,
-        timestamp: new Date().toISOString(),
-        correlationId: options.correlationId,
-      }),
-    );
-
-    await channel.publish(exchange, routingKey, messageBuffer, {
-      persistent: true,
-      correlationId: options.correlationId,
-    });
-
-    await channel.close();
-  }
-}
-
-// Usage
-await eventPublisher.publish(
-  'orders',
-  'order.created',
-  {
-    orderId: order.id,
-    userId: order.userId,
-    amount: order.total,
-  },
-  { correlationId },
-);
-```
-
-### Event Subscriber Pattern
-
-```javascript
-// Event subscriber pattern
-class EventSubscriber {
-  constructor(connection) {
-    this.connection = connection;
-  }
-
-  async subscribe(exchange, pattern, handler) {
-    const channel = await this.connection.createChannel();
-
-    await channel.assertExchange(exchange, 'topic', { durable: true });
-    const { queue } = await channel.assertQueue('', { exclusive: true });
-
-    await channel.bindQueue(queue, exchange, pattern);
-
-    await channel.consume(queue, async (msg) => {
-      if (msg) {
-        try {
-          const data = JSON.parse(msg.content.toString());
-          await handler(data);
-          channel.ack(msg);
-        } catch (error) {
-          logger.error('Event processing failed', {
-            error: error.message,
-            pattern,
-            correlationId: msg.properties.correlationId,
-          });
-          channel.nack(msg, false, false);
-        }
-      }
-    });
-  }
-}
-```
-
-## API Design Guidelines
-
-### REST API Conventions
-
-```javascript
-// Resource naming conventions
-GET    /api/users              // List users
-GET    /api/users/{id}         // Get specific user
-POST   /api/users              // Create user
-PUT    /api/users/{id}         // Update entire user
-PATCH  /api/users/{id}         // Partial update
-DELETE /api/users/{id}         // Delete user
-
-// Nested resources
-GET    /api/users/{id}/orders        // User's orders
-POST   /api/users/{id}/addresses     // Add address to user
-GET    /api/orders/{id}/items        // Order items
-
-// Filtering and pagination
-GET    /api/products?category=electronics&page=2&limit=20&sort=price:asc
-```
-
-### Response Formats
-
-```javascript
-// Success response format
+```json
 {
-  "success": true,
-  "data": { /* resource data */ },
-  "metadata": {
-    "correlationId": "uuid",
-    "timestamp": "2025-09-18T10:30:45.123Z"
-  }
-}
-
-// Error response format
-{
-  "success": false,
   "error": {
-    "message": "User not found",
-    "code": "USER_NOT_FOUND",
-    "statusCode": 404
-  },
-  "metadata": {
-    "correlationId": "uuid",
-    "timestamp": "2025-09-18T10:30:45.123Z"
-  }
-}
-
-// Validation error response
-{
-  "success": false,
-  "error": {
-    "message": "Validation failed",
-    "code": "VALIDATION_ERROR",
-    "statusCode": 400,
-    "details": [
-      { "field": "email", "message": "Invalid email format" },
-      { "field": "password", "message": "Password too weak" }
-    ]
+    "code": "STRING_CODE",
+    "message": "Human readable message",
+    "correlationId": "uuid"
   }
 }
 ```
 
-## Environment Configuration
+- Never expose stack traces in production
+- Use centralized error middleware only — never inline error responses
 
-### Environment Variables Pattern
+### Logging Rules
+
+All services use structured JSON logging. Every log entry MUST include:
+
+```json
+{
+  "timestamp": "ISO8601",
+  "level": "info|warn|error",
+  "serviceName": "<service-name>",
+  "correlationId": "uuid",
+  "message": "..."
+}
+```
+
+- Winston (Node.js), SLF4J/Logback (Java), Serilog (C#), Python `logging` with JSON formatter
+- **Never log**: JWT tokens, refresh tokens, passwords, API keys, secrets, connection strings
+
+### CloudEvents 1.0 Format
+
+All published events MUST follow this structure:
+
+```json
+{
+  "specversion": "1.0",
+  "type": "service.entity.action",
+  "source": "service-name",
+  "id": "uuid",
+  "time": "ISO8601",
+  "datacontenttype": "application/json",
+  "data": {}
+}
+```
+
+### Security Rules (Universal)
+
+- JWT MUST be validated before any controller logic executes
+- All request bodies MUST be validated before reaching service logic
+- Sanitize all inputs
+- Rate limiting MUST be applied
+- Never trust client-provided user IDs — always derive identity from the validated JWT
+
+---
+
+## Service-Specific Instructions
+
+---
+
+### product-service
+
+**Language**: Python 3.11+ | **Framework**: FastAPI + Uvicorn | **Port**: 8001 | **DB**: MongoDB 27019 (Motor async driver)
+
+#### Architecture
+
+- Clean layered: routes → services → repositories → Motor/MongoDB
+- JWT Bearer tokens validated via middleware
+- Dapr pub/sub: publishes `product.created`, `product.updated`, `product.deleted`
+
+#### Project Structure
+
+```
+product-service/
+├── src/
+│   ├── routes/          # FastAPI route definitions
+│   ├── services/        # Business logic
+│   ├── repositories/    # Data access (Motor/MongoDB)
+│   ├── models/          # Pydantic v2 models
+│   ├── middlewares/     # Auth, logging, tracing
+│   ├── events/          # Dapr pub/sub event publishing
+│   └── core/            # Config, logger, errors
+├── tests/unit/ tests/integration/
+├── .dapr/components/
+└── main.py
+```
+
+#### Code Conventions
+
+- Use `async/await` everywhere — FastAPI + Motor are fully async
+- Use **Pydantic v2** models for all request/response validation
+- Type hints on all function signatures; PEP 8 style
+- Use `Depends()` for services and repos (FastAPI DI)
+- Config via `pydantic-settings` `BaseSettings`
+- MongoDB `ObjectId` for document IDs; serialize as strings in responses
+- Use aggregation pipelines for search and category queries
+
+#### Testing
+
+- pytest + pytest-asyncio; `httpx.AsyncClient` for FastAPI routes; `mongomock-motor` for unit tests
+- Run: `pytest tests/unit/ -v` | Coverage: `pytest --cov=src`
+
+#### Non-Goals
+
+- Does NOT manage reviews/ratings (→ review-service)
+- Does NOT manage inventory stock (→ inventory-service)
+
+---
+
+### user-service
+
+**Language**: Node.js 20+ ESM | **Framework**: Express 5.1+ | **Port**: 8002 | **DB**: MongoDB 27018 (Mongoose)
+
+#### Architecture
+
+- Layered MVC: routes → controllers → services → models (Mongoose)
+- JWT Bearer tokens validated via middleware
+- Dapr pub/sub: publishes `user.created`, `user.updated`, `user.deleted`
+
+#### Project Structure
+
+```
+user-service/
+├── src/
+│   ├── controllers/     # Request handlers
+│   ├── services/        # Business logic
+│   ├── models/          # Mongoose schemas/models
+│   ├── schemas/         # Reusable subdocuments
+│   ├── events/          # Dapr pub/sub publishing
+│   ├── middlewares/     # Auth, logging, tracing, correlation ID
+│   ├── validators/      # Input validation (Joi/express-validator)
+│   ├── routes/          # Route definitions
+│   ├── core/            # Config, logger, errors
+│   └── database/        # MongoDB connection setup
+├── tests/unit/ tests/integration/ tests/e2e/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- ESM modules (`import/export`) — NOT CommonJS
+- Express 5.1+ async error handling (no try-catch wrappers needed)
+- Mongoose schemas with built-in validation; subdocument schemas in `src/schemas/`
+- Use `lean()` for read-only queries
+- Timestamps enabled (`createdAt`, `updatedAt`) on all schemas
+- `const` by default; arrow functions for callbacks; `async/await` over `.then()`
+
+#### Security
+
+- Ownership checks MUST be enforced — users may only access/modify their own profile
+- Admin endpoints MUST verify `role === 'admin'`
+
+#### Testing
+
+- Jest; mongodb-memory-server or jest mocks; mock Dapr calls via `jest.mock()`
+- Run: `npm test` | Unit: `npm run test:unit` | Coverage: `npm run test:coverage`
+
+#### Non-Goals
+
+- Does NOT issue JWTs (→ auth-service)
+- Does NOT perform admin operations (→ admin-service)
+
+---
+
+### admin-service
+
+**Language**: Node.js 20+ ESM | **Framework**: Express 5.1+ | **Port**: 8003 | **DB**: None
+
+#### Architecture
+
+- No database — all user operations delegated to user-service via Dapr service invocation
+- All routes enforce admin role verification
+- All outbound service calls forward the incoming JWT
+- Dapr pub/sub: publishes `admin.user.updated`, `admin.user.deleted`
+
+#### Project Structure
+
+```
+admin-service/
+├── src/
+│   ├── controllers/     # Admin endpoint handlers
+│   ├── clients/         # Dapr service invocation clients
+│   ├── middlewares/     # Auth, logging, tracing
+│   ├── validators/      # Input validation
+│   ├── routes/          # Route definitions
+│   └── core/            # Config, logger, errors
+├── tests/unit/ tests/e2e/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- ESM modules; Express 5.1+ with async error handling
+- Admin-only access: ALL routes require JWT with `role === 'admin'`
+- Custom `ErrorResponse` class for error handling
+
+#### Security
+
+- JWT MUST be validated before any controller logic
+- Admin role MUST be verified using `role === 'admin'`
+- Never trust client-provided user IDs
+- All outbound Dapr calls MUST include `X-Correlation-ID` and forwarded JWT
+
+#### Testing
+
+- Jest + Supertest; mock Dapr calls in unit tests; do NOT call real user-service
+- All controllers MUST have unit tests; all routes MUST have e2e tests
+
+#### Non-Goals
+
+- Does NOT authenticate or issue JWTs (→ auth-service)
+- Does NOT store user data (→ user-service)
+- Does NOT manage user passwords
+- Does NOT connect to any database — EVER
+
+---
+
+### auth-service
+
+**Language**: Node.js 20+ ESM | **Framework**: Express 5.1+ | **Port**: 8004 | **DB**: None (stateless)
+
+#### Architecture
+
+- Stateless authentication gateway — no own database
+- Issues and validates JWT access + refresh tokens
+- Calls user-service via Dapr for user lookup/creation
+- Dapr pub/sub: publishes `auth.login`, `auth.register`, `auth.logout`
+
+#### Project Structure
+
+```
+auth-service/
+├── src/
+│   ├── controllers/     # Auth endpoint handlers
+│   ├── middlewares/     # Auth middleware, logging, tracing
+│   ├── validators/      # Input validation
+│   ├── routes/          # Route definitions
+│   ├── clients/         # Dapr service invocation clients
+│   └── core/            # Config, logger, errors
+├── tests/unit/ tests/integration/ tests/e2e/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- ESM modules; Express 5.1+
+- bcrypt for password hashing (salt rounds = 12)
+- JWT: access token (short-lived) + refresh token (long-lived); rotation enforced
+- Token payload: `{ id, email, roles, iat, exp }` — nothing else
+- Rate limiting MUST be applied to the login endpoint
+
+#### Security
+
+- All request bodies MUST be validated before controller logic
+- Passwords MUST use bcrypt with 12 salt rounds — never store or compare plain-text
+- Refresh token rotation: invalidate old token on each use
+- Never log JWT tokens, refresh tokens, or plain-text passwords
+
+#### Testing
+
+- Jest; mock Dapr calls and user-service invocations via `jest.mock()`
+- Run: `npm test` | Coverage: `npm run test:coverage`
+
+#### Non-Goals
+
+- Does NOT manage user profiles (→ user-service)
+- Does NOT enforce admin roles (→ admin-service)
+- Does NOT store persistent user state — stateless
+
+---
+
+### inventory-service
+
+**Language**: Python 3.11+ | **Framework**: Flask 3.0+ with Flask-RESTX | **Port**: 8005 | **DB**: MySQL 3306 (SQLAlchemy ORM + Flask-Migrate)
+
+#### Architecture
+
+- Layered MVC: Flask-RESTX Resources → services → SQLAlchemy models
+- Auto-generated Swagger/OpenAPI via Flask-RESTX
+- JWT Bearer tokens + service token validation
+- Dapr pub/sub: publishes `inventory.reserved`, `inventory.released`, `inventory.low-stock`
+
+#### Project Structure
+
+```
+inventory-service/
+├── src/
+│   ├── controllers/         # Flask-RESTX Resource classes
+│   ├── services/            # Business logic
+│   ├── models/              # SQLAlchemy models (InventoryItem, Reservation, StockMovement)
+│   ├── middlewares/         # Auth, logging, tracing
+│   └── utils/               # Schemas (Marshmallow), event publisher, error codes
+├── migrations/              # Alembic migration scripts
+├── tests/unit/ tests/integration/
+├── config.py
+└── main.py
+```
+
+#### Code Conventions
+
+- Use Flask-RESTX `Resource` classes (auto-generates Swagger)
+- Use SQLAlchemy ORM models with type hints
+- Use Marshmallow schemas for request/response validation
+- Use Flask-Migrate (Alembic) for database migrations
+- `@require_admin` decorator for admin-only endpoints
+- `@require_service_token` decorator for service-to-service calls
+- SSL handling for Azure MySQL: strip `ssl_mode` from URL, use `connect_args`
+
+#### Database Models
+
+- `InventoryItem`: `sku` (unique, indexed), `quantity_available`, `quantity_reserved`, `reorder_level`, `max_stock`, `cost_per_unit`
+- `Reservation`: order-based stock reservations
+- `StockMovement`: audit trail of quantity changes
+
+#### Testing
+
+- pytest + pytest-cov; mock SQLAlchemy/MySQL in unit tests
+- Run: `pytest tests/ -v` | Coverage: `pytest --cov=src`
+- Target: ~91% code coverage
+
+#### Non-Goals
+
+- Does NOT manage product catalog (→ product-service)
+- Does NOT process orders or payments
+
+---
+
+### order-service
+
+**Language**: C# 12 / .NET 8 | **Framework**: ASP.NET Core 8 Web API | **Port**: 8006 | **DB**: SQL Server 1434 (EF Core 8)
+
+#### Architecture
+
+- Clean layered: Controllers → Services → Repositories → EF Core DbContext
+- RESTful with Swagger/OpenAPI via Swashbuckle
+- JWT Bearer tokens via ASP.NET Core Authentication
+- Embedded BackgroundService subscribes to Dapr topics
+- Dapr pub/sub: publishes `order.created`, `order.status.changed`, `order.cancelled`, `return.*`
+
+#### Project Structure (Multi-project solution)
+
+```
+order-service/
+├── OrderService.Api/
+│   ├── Program.cs
+│   ├── Controllers/
+│   └── Migrations/          # EF Core migrations
+├── OrderService.Core/
+│   ├── Data/                # DbContext, entity configs
+│   ├── Models/              # Domain entities + DTOs
+│   ├── Repositories/        # Data access interfaces + implementations
+│   ├── Services/            # Business logic
+│   ├── Messaging/           # IMessagingProvider (Dapr + RabbitMQ)
+│   ├── Events/              # Event models + publishers + consumers
+│   ├── Validators/          # FluentValidation validators
+│   ├── Extensions/          # DI registration extensions
+│   └── Utils/               # StandardLogger, helpers
+└── OrderService.Tests/      # xUnit test project
+```
+
+#### Code Conventions
+
+- C# 12 with nullable reference types enabled
+- EF Core 8 code-first migrations in `OrderService.Api/Migrations/`
+- FluentValidation for request validation
+- Serilog for structured logging
+- `Dapr.AspNetCore` + `Dapr.Client` for pub/sub and service invocation
+- `ICurrentUserService` extracts user from JWT claims via `HttpContextAccessor`
+- `System.Text.Json` with `JsonStringEnumConverter`
+- OpenTelemetry + Zipkin tracing
+
+#### Database
+
+- Entities: `Order`, `OrderItem`, `OrderReturn`, `Event` (outbox pattern)
+- Order statuses: `Pending → Confirmed → Processing → Shipped → Delivered / Cancelled`
+- Return workflow: `ReturnRequested → ReturnApproved → ReturnReceived → Refunded`
+
+#### Testing
+
+- xUnit + Moq + FluentAssertions
+- Run: `dotnet test`
+
+#### Non-Goals
+
+- Does NOT process payments (→ payment-service)
+- Does NOT orchestrate saga (→ order-processor-service)
+
+---
+
+### order-processor-service
+
+**Language**: Java 17 | **Framework**: Spring Boot 3.3.1 | **Port**: 8007 | **DB**: PostgreSQL 5435 (Spring Data JPA + Flyway)
+
+#### Architecture
+
+- Choreography-based saga orchestrator
+- Listens to order events, coordinates payment/inventory/shipping steps
+- Dapr Java SDK for pub/sub; REST endpoints at `/dapr/events/{topic}`
+
+#### Project Structure
+
+```
+order-processor-service/
+├── src/main/java/com/xshopai/orderprocessor/
+│   ├── config/              # DaprConfig, SecurityConfig, WebConfig
+│   ├── controller/          # REST + Admin endpoints
+│   ├── events/
+│   │   ├── consumer/        # @PostMapping /dapr/events/* handlers
+│   │   └── publisher/       # DaprEventPublisher
+│   ├── messaging/           # MessagingProvider (Dapr vs RabbitMQ)
+│   ├── model/entity/        # JPA entities (OrderProcessingSaga)
+│   ├── repository/          # Spring Data JPA repositories
+│   └── service/             # SagaOrchestratorService, SagaMetricsService
+├── src/main/resources/
+│   ├── application.yml      # Default (local)
+│   ├── application-dapr.yml # Dapr profile
+│   └── db/migration/        # Flyway SQL migrations
+└── pom.xml
+```
+
+#### Code Conventions
+
+- Lombok: `@RequiredArgsConstructor`, `@Slf4j`, `@Data`, `@Builder`
+- Spring Data JPA repositories (extend `JpaRepository`)
+- `@Transactional` on service methods that modify saga state
+- `@EnableAsync` for async event processing
+- Spring profiles: `default` (local/direct), `dapr` (with Dapr sidecar)
+- Event consumers are `@RestController` with `@PostMapping("/dapr/events/{topic}")`
+- Jackson with `JavaTimeModule` for Java 8 date/time
+
+#### Saga Lifecycle
+
+```
+PENDING_PAYMENT_CONFIRMATION → PAYMENT_CONFIRMED → INVENTORY_RESERVED → SHIPPING_INITIATED → COMPLETED
+```
+
+- Admin confirms payment manually
+- Compensating transactions on failure (release inventory, cancel payment)
+- Saga stores serialized order items as JSON columns
+- Max retry attempts configurable via `saga.retry.max-attempts`
+
+#### Event Subscriptions
+
+| Event                | Action                                        |
+| -------------------- | --------------------------------------------- |
+| `order.created`      | Start new saga (PENDING_PAYMENT_CONFIRMATION) |
+| `order.cancelled`    | Cancel saga, compensate                       |
+| `payment.processed`  | Advance to inventory reservation              |
+| `inventory.reserved` | Advance to shipping                           |
+| `return.approved`    | Handle return processing                      |
+
+#### Testing
+
+- JUnit 5 + Spring Boot Test + Mockito
+- Run: `mvn test` | Integration: `mvn verify`
+
+#### Non-Goals
+
+- Does NOT manage the order record directly (→ order-service)
+- Does NOT process payments directly (→ payment-service)
+
+---
+
+### payment-service
+
+**Language**: C# 12 / .NET 8 | **Framework**: ASP.NET Core 8 Web API | **Port**: 8009 | **DB**: SQL Server 1433 (EF Core 8)
+
+#### Architecture
+
+- Provider abstraction pattern: `IPaymentProvider` with Stripe, PayPal, Square, Simulation implementations
+- RESTful with Swagger/OpenAPI via Swashbuckle
+- Dapr pub/sub: publishes `payment.processed`, `payment.failed`, `payment.refunded`
+
+#### Project Structure
+
+```
+payment-service/
+├── PaymentService/
+│   ├── Program.cs
+│   ├── Controllers/
+│   ├── Models/                       # Entity models + DTOs
+│   ├── Data/                         # DbContext, entity configs
+│   ├── Services/
+│   │   ├── Providers/
+│   │   │   ├── StripePaymentProvider.cs
+│   │   │   ├── PayPalPaymentProvider.cs
+│   │   │   ├── SquarePaymentProvider.cs
+│   │   │   └── SimulationPaymentProvider.cs
+│   │   └── PaymentService.cs
+│   ├── Messaging/
+│   ├── Events/Publishers/
+│   ├── Middlewares/
+│   └── Migrations/
+└── PaymentService.csproj
+```
+
+#### Code Conventions
+
+- C# 12 with nullable reference types enabled
+- EF Core 8 with SQL Server; FluentValidation for request validation
+- Serilog for structured logging; `System.Text.Json` with camelCase naming
+- Provider selected via `PaymentProviders:ActiveProvider` config
+- `SimulationPaymentProvider` MUST be used in dev/test — NEVER call real providers
+- Payment statuses: `Pending → Processing → Completed / Failed / Refunded`
+
+#### Security
+
+- Payment provider API keys MUST be stored in Dapr secrets store or Azure Key Vault
+- Never expose raw payment provider error messages to API callers
+- Never log full payment card details
+
+#### Testing
+
+- xUnit + Moq; use SimulationPaymentProvider in all tests
+- Run: `dotnet test`
+
+#### Non-Goals
+
+- Does NOT manage orders (→ order-service)
+- Does NOT orchestrate saga (→ order-processor-service)
+
+---
+
+### cart-service
+
+**Language**: Node.js 20+ TypeScript | **Framework**: Express 4.18+ | **Port**: 8008 | **DB**: Redis 6379 (ioredis + Dapr state store)
+
+#### Architecture
+
+- StorageFactory selects Dapr state store or direct Redis based on `PLATFORM_MODE`
+- User ID derived from `X-User-Id` header (set by BFF/gateway)
+- Guest cart support: UUID-based, shorter TTL, transferable to authenticated carts
+- Dapr pub/sub: publishes `cart.updated`, `cart.cleared`
+
+#### Project Structure
+
+```
+cart-service/
+├── src/
+│   ├── controllers/
+│   ├── services/
+│   │   ├── cart.service.ts
+│   │   ├── dapr.service.ts        # Dapr state + pub/sub
+│   │   ├── redis.service.ts       # Direct Redis (App Service mode)
+│   │   └── storage.factory.ts     # Dapr vs Redis selector
+│   ├── models/          # TypeScript interfaces (Cart, CartItem)
+│   ├── routes/
+│   ├── middlewares/     # Trace context propagation
+│   └── core/            # Config, logger, errors, Consul
+├── tests/unit/ tests/integration/ tests/e2e/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- TypeScript strict mode; ESM via `tsc`
+- `interface` for all data shapes in `src/models/`
+- `PLATFORM_MODE=dapr` → Dapr state store; `PLATFORM_MODE=direct` → ioredis
+- ETag-based optimistic concurrency for cart state
+- `asyncHandler` wrapper for Express route handlers
+- W3C Trace Context propagation via `traceparent` header
+- Cart transfer: `POST /api/v1/cart/transfer` merges guest cart into user cart
+
+#### Limits
+
+- `maxItems` and `maxItemQuantity` per cart — configurable, enforced on all operations
+- Cart TTL: configurable days for authenticated (default 30) and guest (default 7) carts
+
+#### Testing
+
+- Jest + ts-jest with `--experimental-vm-modules` for ESM support
+- Run: `npm test` | E2E: `npm run test:e2e` | Coverage: `npm run test:coverage`
+
+#### Non-Goals
+
+- Does NOT validate JWT (handled by BFF)
+- Does NOT manage product pricing (→ product-service)
+
+---
+
+### review-service
+
+**Language**: Node.js 20+ ESM | **Framework**: Express with Mongoose ODM | **Port**: 8010 | **DB**: MongoDB 27020
+
+#### Architecture
+
+- Layered MVC: routes → controllers → models (Mongoose)
+- JWT Bearer tokens for authentication
+- Dapr pub/sub: publishes review events
+
+#### Project Structure
+
+```
+review-service/
+├── src/
+│   ├── controllers/
+│   ├── models/          # Mongoose schemas (Review)
+│   ├── routes/
+│   ├── middlewares/     # Auth, validation
+│   └── core/            # Config, logger, errors
+├── tests/unit/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- ESM modules with Babel transpilation
+- Review model: rating (1-5), title, body, productId, userId, verified purchase flag
+- Compound index on `productId + userId` — one review per product per user
+- Aggregation pipelines for average ratings and review statistics
+- Timestamps enabled
+
+#### Security
+
+- Users may only submit one review per product per user account
+- Users may only edit or delete their own reviews
+
+#### Testing
+
+- Jest; Babel config for ESM→CJS test transformation; mock MongoDB operations
+- Run: `npm test`
+
+#### Non-Goals
+
+- Does NOT manage product catalog (→ product-service)
+
+---
+
+### notification-service
+
+**Language**: Node.js 20+ TypeScript | **Framework**: Express | **Port**: 8011 | **DB**: None (stateless)
+
+#### Architecture
+
+- Terminal event consumer — subscribes to Dapr pub/sub topics, sends notifications
+- No end-user auth — service-to-service only
+- Email via Nodemailer (SMTP/Mailpit for dev) + Azure Communication Services (production)
+- Event handlers MUST be idempotent (duplicate events must not send duplicate emails)
+
+#### Project Structure
+
+```
+notification-service/
+├── src/
+│   ├── controllers/     # Subscription handlers
+│   ├── services/        # Notification sending logic
+│   ├── templates/       # Email templates
+│   ├── middlewares/     # Logging, tracing
+│   ├── routes/          # Route + subscription definitions
+│   └── core/            # Config, logger
+├── tests/unit/
+└── .dapr/components/
+```
+
+#### Event Subscriptions
+
+| Event                  | Action                    |
+| ---------------------- | ------------------------- |
+| `auth.register`        | Send welcome email        |
+| `auth.login`           | Send login notification   |
+| `user.updated`         | Send profile update email |
+| `order.created`        | Send order confirmation   |
+| `order.status.changed` | Send order status update  |
+| `payment.completed`    | Send payment receipt      |
+
+#### Dev Tip
+
+Use **Mailpit** (port 8025 web UI, port 1025 SMTP) to view sent emails during development.
+
+#### Testing
+
+- Jest + ts-jest; mock Nodemailer transport; test idempotent handling
+- Run: `npm test` | Coverage: `npm run test:coverage`
+
+#### Non-Goals
+
+- Does NOT publish business events
+- Does NOT store notification history
+- Does NOT provide real-time push notifications
+
+---
+
+### audit-service
+
+**Language**: Node.js 20+ TypeScript | **Framework**: Express | **Port**: 8012 | **DB**: PostgreSQL 5434 (Knex.js)
+
+#### Architecture
+
+- Terminal event consumer — subscribes to ALL Dapr pub/sub events, writes immutable audit records
+- Read-only query endpoints + Dapr subscription endpoints
+- Audit records are **append-only** — no UPDATE or DELETE operations — EVER
+
+#### Project Structure
+
+```
+audit-service/
+├── src/
+│   ├── controllers/     # Query + subscription handlers
+│   ├── services/        # Audit record business logic
+│   ├── repositories/    # Data access (Knex.js)
+│   ├── middlewares/     # Auth, logging, tracing
+│   ├── routes/          # Route + subscription definitions
+│   ├── migrations/      # Knex database migrations
+│   └── core/            # Config, logger
+├── tests/unit/
+└── .dapr/components/
+```
+
+#### Code Conventions
+
+- TypeScript strict mode
+- Knex.js for PostgreSQL queries (NOT an ORM)
+- Audit table: `id`, `event_type`, `source`, `subject`, `data` (JSONB), `correlation_id`, `created_at`
+- Index on `event_type`, `source`, `created_at`
+- Handlers MUST be idempotent — deduplicate by event ID
+- All event data stored as JSONB
+
+#### Event Subscriptions
+
+Subscribes to ALL platform events: `auth.*`, `user.*`, `admin.*`, `order.*`, `payment.*`, `product.*`, `cart.*`, `inventory.*`
+
+#### Testing
+
+- Jest + ts-jest; mock PostgreSQL (Knex); test idempotency (duplicate event IDs must not create duplicate records)
+- Run: `npm test`
+
+#### Non-Goals
+
+- Does NOT publish business events
+- Does NOT modify or delete audit records — append-only
+- Does NOT perform business logic on events
+
+---
+
+### chat-service
+
+**Language**: Node.js 20+ TypeScript | **Framework**: Express | **Port**: 8013 | **DB**: None (stateless)
+
+#### Architecture
+
+- AI orchestration service — Azure OpenAI GPT-4o with function calling
+- Receives user messages, calls Azure OpenAI, executes function tools via Dapr service invocation
+- Conversation history managed in-memory per session
+
+#### Project Structure
+
+```
+chat-service/
+├── src/
+│   ├── controllers/     # Chat endpoint handlers
+│   ├── services/        # AI orchestration, conversation management
+│   ├── tools/           # Function calling tool definitions (JSON Schema)
+│   ├── clients/         # Dapr service invocation clients
+│   ├── middlewares/     # Auth, logging
+│   ├── routes/
+│   └── core/            # Config, logger
+└── .dapr/components/
+```
+
+#### AI Function Calling Tools
+
+| Tool                | Description                 | Calls           |
+| ------------------- | --------------------------- | --------------- |
+| `searchProducts`    | Search product catalog      | product-service |
+| `getProductDetails` | Get product by ID           | product-service |
+| `getCategories`     | List product categories     | product-service |
+| `getMyOrders`       | Get user's order history    | order-service   |
+| `getOrderDetails`   | Get specific order          | order-service   |
+| `trackOrder`        | Track order delivery status | order-service   |
+
+#### Security
+
+- JWT MUST be validated before any chat endpoint
+- Conversation history MUST be session-scoped — never leak one user's history to another
+- Never log user message content or AI response content
+- Never include raw Azure OpenAI error responses in API responses
+
+#### Testing
+
+- Jest + ts-jest; mock Azure OpenAI responses and Dapr calls
+- Run: `npm test`
+
+#### Non-Goals
+
+- Does NOT store chat history persistently — in-memory per session only
+- Does NOT process orders or payments directly
+
+---
+
+### web-bff
+
+**Language**: Node.js 20+ TypeScript | **Framework**: Express 4.19+ | **Port**: 8014 | **DB**: None (stateless)
+
+#### Architecture
+
+- Backend for Frontend — aggregates multiple microservice calls into UI-optimized responses
+- JWT validation + cookie-based auth forwarding
+- `PLATFORM_MODE=dapr` → Dapr SDK; `PLATFORM_MODE=direct` → direct HTTP via ServiceResolver
+
+#### Project Structure
+
+```
+web-bff/
+├── src/
+│   ├── clients/           # Per-service client classes (typed)
+│   │   ├── auth.client.ts
+│   │   ├── user.client.ts
+│   │   ├── product.client.ts
+│   │   ├── order.client.ts
+│   │   ├── cart.client.ts
+│   │   └── inventory.client.ts
+│   ├── core/
+│   │   ├── config.ts
+│   │   ├── daprClient.ts
+│   │   ├── serviceInvoker.ts      # Dapr vs direct HTTP abstraction
+│   │   ├── serviceResolver.ts     # App ID → URL mapping
+│   │   └── baseServiceClient.ts
+│   ├── middleware/         # Auth, error handling, trace context
+│   ├── routes/
+│   ├── validators/         # Config validation (blocking on startup)
+│   └── tracing.ts          # OpenTelemetry + Zipkin
+└── .dapr/components/
+```
+
+#### Downstream Services
+
+| Service           | Dapr App ID         | Direct Port |
+| ----------------- | ------------------- | ----------- |
+| auth-service      | `auth-service`      | 8004        |
+| user-service      | `user-service`      | 8002        |
+| product-service   | `product-service`   | 8001        |
+| order-service     | `order-service`     | 8006        |
+| cart-service      | `cart-service`      | 8008        |
+| inventory-service | `inventory-service` | 8005        |
+
+#### Code Conventions
+
+- TypeScript strict mode
+- Path aliases: `@/` → `src/`, resolved via `tsc-alias`
+- Use `BaseServiceClient` abstract class for all downstream service clients
+- JWT config fetched from auth-service and cached
+- CORS MUST restrict to configured `ALLOWED_ORIGINS`
+- Helmet middleware MUST be applied
+- Never expose internal service URLs or Dapr app IDs in API responses
+
+#### Testing
+
+- Jest + ts-jest; mock downstream service clients
+- Test: auth failure, authorization failure, service unavailability scenarios
+- Run: `npm test`
+
+#### Non-Goals
+
+- Does NOT own a database
+- Does NOT issue JWT tokens (→ auth-service)
+- Does NOT publish or consume domain events
+
+---
+
+### customer-ui
+
+**Language**: JavaScript JSX | **Framework**: React 18.2 with CRA (react-scripts 5) | **Port**: 3000
+
+#### Architecture
+
+- SPA — all API calls via Web BFF (port 8014)
+- Redux Toolkit (global state) + Zustand (lightweight stores) + TanStack Query v5 (server state)
+- React Router DOM v6; Axios HTTP client; TailwindCSS 3 + Heroicons
+
+#### Project Structure
+
+```
+customer-ui/
+├── src/
+│   ├── api/             # Axios API client configuration
+│   ├── components/      # Reusable UI components
+│   ├── contexts/        # React context providers
+│   ├── data/            # Static data / constants
+│   ├── hooks/           # Custom React hooks
+│   ├── pages/           # Page-level components (route targets)
+│   ├── store/           # Redux Toolkit slices + Zustand stores
+│   ├── telemetry/       # Application Insights
+│   └── utils/
+├── nginx.conf
+└── docker-entrypoint.sh  # Injects runtime env vars for Nginx
+```
+
+#### Code Conventions
+
+- JavaScript JSX — NOT TypeScript
+- Functional components with hooks exclusively
+- TailwindCSS for all styling — no CSS modules
+- Redux Toolkit `createSlice` for global state
+- TanStack Query `useQuery`/`useMutation` for API data fetching
+- Zustand for lightweight local state (cart, auth)
+- React Router v6 BrowserRouter
+- Axios with base URL and interceptors
+- Icons via `@heroicons/react`
+- Toast notifications via `react-toastify`
+- Azure Application Insights SDK for telemetry
+- Docker multi-stage: Node.js build → Nginx
+
+#### Security
+
+- All API calls MUST go through Web BFF — NEVER call microservices directly from browser
+- Use `httpOnly` cookies for JWT — NEVER store JWTs in localStorage
+- Handle 401 → redirect to login; 403 → show access-denied
+
+#### Testing
+
+- React Testing Library + Jest; Playwright for E2E
+- Run: `npm test` (unit) | `npm run test:e2e` (Playwright)
+
+---
+
+### admin-ui
+
+**Language**: TypeScript TSX | **Framework**: React 18.2 with react-app-rewired (CRA overrides) | **Port**: 3001
+
+#### Architecture
+
+- SPA — all API calls via Web BFF (port 8014)
+- Redux Toolkit + Zustand + TanStack Query v5
+- React Router DOM v6; Axios; TailwindCSS 3 + HeadlessUI + Heroicons
+- TanStack Table v8 for data grids; Recharts for analytics dashboards
+
+#### Project Structure
+
+```
+admin-ui/
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── contexts/        # React context providers
+│   ├── pages/           # Page-level components
+│   ├── services/        # API service classes
+│   ├── store/           # Redux Toolkit slices + Zustand stores
+│   ├── telemetry/       # Application Insights
+│   ├── types/           # TypeScript type definitions
+│   └── utils/
+├── config-overrides.js  # CRA config overrides (react-app-rewired)
+├── nginx.conf
+└── docker-entrypoint.sh
+```
+
+#### Code Conventions
+
+- TypeScript strict mode (TSX)
+- Functional components with hooks exclusively
+- TailwindCSS utility classes for all styling
+- HeadlessUI (`@headlessui/react`) for accessible dropdown, dialog, transition
+- TanStack Table for sortable/filterable data tables
+- Recharts for charts and graphs
+- Type definitions in `src/types/`; API service classes in `src/services/`
+- Admin role required for all operations
+- Azure Application Insights for telemetry
+- Docker multi-stage: Node.js build → Nginx
+
+#### Security
+
+- All API calls MUST go through Web BFF — NEVER call microservices directly
+- `httpOnly` cookies for JWT — NEVER store in localStorage
+- Admin portal MUST enforce authentication before rendering any route
+
+#### Testing
+
+- React Testing Library + Jest (via react-app-rewired); mock API service calls
+- Run: `npm test`
+
+---
+
+### db-seeder
+
+**Language**: Python 3.11+ | **Type**: CLI utility (no server, no Dapr)
+
+#### Purpose
+
+Seeds users, products, and inventory data for demo/development environments. Direct database connections.
+
+#### CLI Usage
 
 ```bash
-# Service identification
-NAME=user-service
-VERSION=1.0.0
-NODE_ENV=development
-
-# Database configuration
-MONGODB_URI=mongodb://localhost:27017/user_service_dev_db
-REDIS_URL=redis://localhost:6379
-DATABASE_POOL_SIZE=10
-
-# Authentication
-JWT_SECRET=your_jwt_secret_minimum_32_characters
-JWT_EXPIRES_IN=24h
-BCRYPT_ROUNDS=12
-
-# External services
-AUTH_SERVICE_URL=http://localhost:8004
-PRODUCT_SERVICE_URL=http://localhost:8001
-PAYMENT_SERVICE_URL=http://localhost:8009
-
-# Message broker
-RABBITMQ_URL=amqp://admin:admin123@localhost:5672
-RABBITMQ_EXCHANGE=xshopai.events
-
-# Observability
-LOG_LEVEL=debug
-LOG_FORMAT=console
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318/v1/traces
-
-# Rate limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+python seed.py                  # Seed all data
+python seed.py --users          # Seed users only
+python seed.py --products       # Seed products only
+python seed.py --inventory      # Seed inventory only
+python seed.py --clear          # Clear ALL databases
 ```
 
-## Testing Patterns
+#### Databases Targeted
 
-### Unit Testing Standards
+| Database   | Service           | Default                                               |
+| ---------- | ----------------- | ----------------------------------------------------- |
+| MongoDB    | user-service      | `mongodb://admin:admin123@localhost:27018`            |
+| MongoDB    | product-service   | `mongodb://admin:admin123@localhost:27019`            |
+| MongoDB    | review-service    | `mongodb://admin:admin123@localhost:27020`            |
+| MySQL      | inventory-service | `admin:admin123@localhost:3306/inventory_service_db`  |
+| PostgreSQL | audit-service     | `postgres:postgres@localhost:5434/audit-service`      |
+| PostgreSQL | order-processor   | `postgres:postgres@localhost:5435/order_processor_db` |
+| SQL Server | order-service     | `sa:Admin123!@localhost:1434/OrderServiceDb`          |
+| SQL Server | payment-service   | `sa:Admin123!@localhost:1433/PaymentServiceDb`        |
 
-```javascript
-// Jest test structure
-describe('UserService', () => {
-  let userService;
-  let mockUserRepository;
+#### Demo Credentials
 
-  beforeEach(() => {
-    mockUserRepository = {
-      findById: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-    userService = new UserService(mockUserRepository);
-  });
+- Admin: `admin@xshopai.com` / `admin`
+- Guest: `guest@xshopai.com` / `guest`
 
-  describe('createUser', () => {
-    it('should create user with valid data', async () => {
-      // Arrange
-      const userData = {
-        email: 'test@example.com',
-        password: 'ValidPassword123!',
-        firstName: 'John',
-        lastName: 'Doe',
-      };
-      mockUserRepository.create.mockResolvedValue({ id: 1, ...userData });
+#### Security
 
-      // Act
-      const result = await userService.createUser(userData);
+- Never use production credentials in `.env` or committed config
+- Use `fetch-azure-secrets.sh` for Azure deployments (fetches from Key Vault)
+- Bcrypt-hashed passwords MUST be used — never plain-text in seed data files
+- Run `--clear` only against non-production databases
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.email).toBe(userData.email);
-      expect(mockUserRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: userData.email,
-          password: expect.any(String), // hashed password
-        }),
-      );
-    });
-  });
-});
+#### Non-Goals
+
+- NOT a microservice — no server, no HTTP API, no Dapr
+- NOT for production data
+
+---
+
+### infrastructure
+
+**Language**: Bicep (ARM DSL) + Bash + PowerShell | **Target**: Azure
+
+#### Deployment Targets
+
+- `app-service/bicep/` — Azure App Service with Bicep modules
+- `app-service-docker/bicep/` — Azure App Service with Docker containers
+- `aca/bash/` — Azure Container Apps (bash scripts)
+- `local/` — Local Docker Compose
+
+#### Azure Resources Deployed
+
+- Azure App Service / Container Apps (16 services + 2 UIs)
+- Azure Container Registry (ACR)
+- Azure Service Bus or RabbitMQ container
+- Azure Cache for Redis
+- Azure Database for MySQL, PostgreSQL
+- Azure SQL Database
+- Azure Cosmos DB for MongoDB
+- Azure Key Vault
+- Azure Application Insights + Log Analytics Workspace
+
+#### Conventions
+
+- Modular Bicep: one module per Azure resource type; `main.bicep` as orchestrator
+- Environment-specific parameter files in `parameters/` directory
+- Bash scripts: use `set -euo pipefail` for strict error handling
+- Tags on ALL Azure resources: `environment`, `project`, `managedBy`
+- OIDC authentication for GitHub Actions (no stored credentials)
+- Connection strings/API keys MUST NOT appear in Bicep `outputs`
+
+#### Security
+
+- Secret values MUST NOT be hardcoded in Bicep templates — use Key Vault references
+- GitHub Actions MUST use OIDC for Azure auth — never store long-lived credentials
+- Production `*.bicepparam` files MUST NOT be committed with real secrets
+
+---
+
+## Dapr Integration Summary
+
+### Service Invocation
+
+```
+http://localhost:3500/v1.0/invoke/{app-id}/method/{path}
 ```
 
-### Integration Testing
+- Always forward `X-Correlation-ID` and `Authorization` headers on outbound calls
 
-```javascript
-// Supertest integration tests
-describe('User API', () => {
-  let app;
-  let authToken;
+### Pub/Sub Topics Published per Service
 
-  beforeAll(async () => {
-    app = await createTestApp();
-    authToken = await getTestAuthToken();
-  });
+| Service              | Topics Published                                                       |
+| -------------------- | ---------------------------------------------------------------------- |
+| auth-service         | `auth.login`, `auth.register`, `auth.logout`                           |
+| user-service         | `user.created`, `user.updated`, `user.deleted`                         |
+| admin-service        | `admin.user.updated`, `admin.user.deleted`                             |
+| product-service      | `product.created`, `product.updated`, `product.deleted`                |
+| inventory-service    | `inventory.reserved`, `inventory.released`, `inventory.low-stock`      |
+| order-service        | `order.created`, `order.status.changed`, `order.cancelled`, `return.*` |
+| payment-service      | `payment.processed`, `payment.failed`, `payment.refunded`              |
+| cart-service         | `cart.updated`, `cart.cleared`                                         |
+| audit-service        | _(none — terminal consumer only)_                                      |
+| notification-service | _(none — consumer only)_                                               |
 
-  afterAll(async () => {
-    await cleanupTestData();
-    await closeTestApp(app);
-  });
+---
 
-  describe('POST /api/users', () => {
-    it('should create user with valid data', async () => {
-      const userData = {
-        email: 'newuser@example.com',
-        password: 'ValidPassword123!',
-        firstName: 'Jane',
-        lastName: 'Smith',
-      };
-
-      const response = await request(app)
-        .post('/api/users')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send(userData)
-        .expect(201);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.email).toBe(userData.email);
-    });
-  });
-});
-```
-
-## Code Quality Standards
-
-### ESLint Configuration Preferences
-
-```javascript
-// Prefer explicit error handling
-try {
-  const result = await riskyOperation();
-  return result;
-} catch (error) {
-  logger.error('Operation failed', { error: error.message });
-  throw new ErrorResponse('Operation failed', 500);
-}
-
-// Prefer async/await over promises
-// ✅ Good
-const user = await userService.findById(userId);
-
-// ❌ Avoid
-userService.findById(userId).then((user) => {
-  // handle user
-});
-
-// Prefer explicit return types in TypeScript
-async function createUser(userData: CreateUserRequest): Promise<UserResponse> {
-  // implementation
-}
-```
-
-### Security Best Practices
-
-```javascript
-// Input validation
-const validateCreateUser = [
-  body('email').isEmail().normalizeEmail(),
-  body('password')
-    .isLength({ min: 8 })
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
-  body('firstName').trim().isLength({ min: 2, max: 50 }),
-  body('lastName').trim().isLength({ min: 2, max: 50 }),
-];
-
-// Sanitize output
-const sanitizeUser = (user) => ({
-  id: user.id,
-  email: user.email,
-  firstName: user.firstName,
-  lastName: user.lastName,
-  createdAt: user.createdAt,
-  // Never include password, internal IDs, etc.
-});
-
-// Rate limiting for sensitive operations
-const sensitiveOperationsSlowDown = slowDown({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  delayAfter: 2, // Allow 2 requests per windowMs without delay
-  delayMs: 500, // Add 500ms delay per request after delayAfter
-  maxDelayMs: 20000, // Max delay of 20 seconds
-});
-```
-
-## Monitoring & Observability
-
-### OpenTelemetry Instrumentation
-
-```javascript
-// Trace instrumentation
-import { trace } from '@opentelemetry/api';
-
-const tracer = trace.getTracer('user-service', '1.0.0');
-
-async function createUser(userData) {
-  const span = tracer.startSpan('createUser');
-
-  try {
-    span.setAttributes({
-      'user.email': userData.email,
-      'operation.type': 'CREATE_USER',
-    });
-
-    const user = await userRepository.create(userData);
-
-    span.setStatus({ code: trace.SpanStatusCode.OK });
-    return user;
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({
-      code: trace.SpanStatusCode.ERROR,
-      message: error.message,
-    });
-    throw error;
-  } finally {
-    span.end();
-  }
-}
-```
-
-## Common Gotchas & Best Practices
-
-### Database Transactions
-
-```javascript
-// MongoDB transactions
-const session = await mongoose.startSession();
-try {
-  await session.withTransaction(async () => {
-    const user = await User.create([userData], { session });
-    await Profile.create([profileData], { session });
-    return user[0];
-  });
-} finally {
-  await session.endSession();
-}
-```
-
-### Memory Management
-
-```javascript
-// Prevent memory leaks in event listeners
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-
-async function gracefulShutdown() {
-  logger.info('Shutting down gracefully...');
-
-  // Close database connections
-  await mongoose.connection.close();
-
-  // Close Redis connection
-  await redisClient.quit();
-
-  // Close message broker connection
-  await messageBroker.close();
-
-  process.exit(0);
-}
-```
-
-### Performance Optimization
-
-```javascript
-// Database query optimization
-const users = await User.find({ active: true })
-  .select('id email firstName lastName') // Only select needed fields
-  .limit(50) // Limit results
-  .lean(); // Return plain objects instead of Mongoose documents
-
-// Caching strategy
-const getCachedUser = async (userId) => {
-  const cacheKey = `user:${userId}`;
-
-  // Try cache first
-  let user = await redis.get(cacheKey);
-  if (user) {
-    return JSON.parse(user);
-  }
-
-  // Fetch from database
-  user = await User.findById(userId).lean();
-  if (user) {
-    await redis.setex(cacheKey, 300, JSON.stringify(user)); // Cache for 5 minutes
-  }
-
-  return user;
-};
-```
-
-## Development Workflow
-
-### Git Conventions
+## Environment Variables (All Services)
 
 ```bash
-# Commit message format
-feat(user-service): add email verification endpoint
-fix(auth-service): resolve JWT token expiration issue
-docs(api): update authentication documentation
-test(order-service): add integration tests for order creation
-refactor(common): extract correlation ID helper to shared library
-
-# Branch naming
-feature/user-email-verification
-bugfix/jwt-token-expiration
-hotfix/critical-payment-issue
+# Shared across most services
+JWT_SECRET=<shared-secret>
+DAPR_HTTP_PORT=3500
+DAPR_GRPC_PORT=50001
+NODE_ENV=development              # Node.js services
+ASPNETCORE_ENVIRONMENT=Development  # .NET services
+FLASK_ENV=development             # Python Flask/RESTX
 ```
 
-### Code Review Checklist
-
-- [ ] Authentication and authorization properly implemented
-- [ ] Correlation ID propagated through all operations
-- [ ] Error handling with proper HTTP status codes
-- [ ] Input validation and sanitization
-- [ ] Logging with appropriate level and context
-- [ ] Rate limiting on public endpoints
-- [ ] Unit tests cover main functionality
-- [ ] Database queries optimized and indexed
-- [ ] Memory leaks prevented (event listener cleanup)
-- [ ] Environment variables used for configuration
-
-## Documentation Standards
-
-### API Documentation
-
-```javascript
-/**
- * Create a new user account
- *
- * @route POST /api/users
- * @param {CreateUserRequest} userData - User registration data
- * @returns {Promise<UserResponse>} Created user data
- * @throws {ValidationError} When input data is invalid
- * @throws {ConflictError} When email already exists
- *
- * @example
- * const userData = {
- *   email: 'user@example.com',
- *   password: 'SecurePass123!',
- *   firstName: 'John',
- *   lastName: 'Doe'
- * };
- * const user = await createUser(userData);
- */
-```
-
-### README Structure
-
-Each service should have:
-
-- Purpose and responsibilities
-- API endpoints documentation
-- Environment setup instructions
-- Database schema/models
-- Testing instructions
-- Deployment guidelines
-- Troubleshooting guide
-
-This instruction file should help GitHub Copilot provide more accurate and contextually relevant suggestions for the xshopai platform. Update this file as the architecture evolves or new patterns are adopted.
+Full per-service env vars are documented in each service's `.env.example` or README.
